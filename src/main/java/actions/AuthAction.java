@@ -76,6 +76,10 @@ public class AuthAction extends ActionBase {
 
                 //ログインした従業員のDBデータを取得
                 EmployeeView ev = service.findOne(code, plainPass, pepper);
+                //平文パスワードの場合
+                if (ev == null) {
+                    ev = service.findOneByPlainPassword(code, plainPass);
+                }
                 //セッションにログインした従業員を設定
                 putSessionScope(AttributeConst.LOGIN_EMP, ev);
                 //セッションにログイン完了のフラッシュメッセージを設定

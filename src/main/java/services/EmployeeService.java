@@ -69,6 +69,28 @@ public class EmployeeService extends ServiceBase {
     }
 
     /**
+     * 社員番号、パスワードを条件に取得したデータをEmployeeViewのインスタンスで返却する
+     * @param code 社員番号
+     * @param plainPass パスワード文字列
+     * @return 取得データのインスタンス 取得できない場合null
+     */
+    public EmployeeView findOneByPlainPassword(String code, String plainPass) {
+        Employee e = null;
+        try {
+            //社員番号と平文パスワードを条件に未削除の従業員を1件取得する
+            e = em.createNamedQuery(JpaConst.Q_EMP_GET_BY_CODE_AND_PASS, Employee.class)
+                    .setParameter(JpaConst.JPQL_PARM_CODE, code)
+                    .setParameter(JpaConst.JPQL_PARM_PASSWORD, plainPass)
+                    .getSingleResult();
+
+        } catch (NoResultException ex) {
+        }
+
+        return EmployeeConverter.toView(e);
+
+    }
+
+    /**
      * idを条件に取得したデータをEmployeeViewのインスタンスで返却する
      * @param id
      * @return 取得データのインスタンス
@@ -211,6 +233,13 @@ public class EmployeeService extends ServiceBase {
 
                 //データが取得できた場合、認証成功
                 isValidEmployee = true;
+            } else {
+                // 平文パスワードで再認証
+                ev = findOneByPlainPassword(code, plainPass);
+                if (ev != null && ev.getId() != null) {
+                    // 平文パスワードで認証成功
+                    isValidEmployee = true;
+                }
             }
         }
 
